@@ -101,7 +101,7 @@ return (
 Sending a transaction is also very simple and similar for both networks. However, one important difference between the two is gas estimates. The gas limit for `sendTransaction` on Ethereum will always be 21000. However Arbitrum uses ArbGas and is calculated differently (see [Arbitrum Docs](https://developer.offchainlabs.com/docs/arbgas)). For this we set a fallback price of `1000000`.
 
 ```js
-const web3 = magic.network === "ethereum" ? ethWeb3 : arbitrumWeb3;
+const web3 = magic.network === "ethereum" ? web3Ethereum : web3Arbitrum;
 
 const sendTransaction = async () => {
   if (!toAddress || !amount) return;
