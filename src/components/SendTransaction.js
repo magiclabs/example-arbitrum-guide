@@ -14,7 +14,7 @@ export default function SendTransaction({ web3, network, publicAddress, fetchBal
       from: publicAddress,
       to: toAddress,
       value: web3.utils.toWei(amount),
-      gasLimit: network === 'ethereum' ? web3.eth.getBlock("latest").gasLimit : 1000000
+      gasLimit: network === 'ethereum' ? 21000 : 1000000
     });
     setTxnHash(transactionHash);
     enableForm();

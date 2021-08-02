@@ -24,7 +24,7 @@ export default function ContractCall({ network, publicAddress, fetchBalance, mes
     setDisabled(true);
     updateBtnRef.current.innerText = 'Submitted...';
   }
-
+ 
   // Re-enable input form once the transaction is confirmed
   const enableForm = () => {
     setDisabled(false);

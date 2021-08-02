@@ -1,13 +1,13 @@
 # Resources
-- [GitHub Repo](https://github.com/magiclabs/example-arbitrum)
+- [GitHub Repo](https://github.com/magiclabs/example-arbitrum-guide)
 - [Demo](https://magic-arbitrum.vercel.app/login)
 
 # Quick Start
 
 ```
-$ git clone https://github.com/magiclabs/example-arbitrum.git
-$ cd example-arbitrum
-$ mv .env.local .env // enter your Magic Publishable Key (from https://dashboard.magic.link)
+$ git clone https://github.com/magiclabs/example-arbitrum-guide.git
+$ cd example-arbitrum-guide
+$ mv .env.local .env // enter your TEST API Key (from https://dashboard.magic.link)
 $ yarn install
 $ yarn start
 ```
@@ -16,19 +16,15 @@ $ yarn start
 
 ## What is Arbitrum
 
-With the rising gas costs on Ethereum, many developers are looking towards Layer 2 scaling solutions to help with both improved transaction speed, as well as cheaper gas costs for users. Arbitrum is one such solution. 
+[Arbitrum](https://arbitrum.io) is a new Layer 2 scaling solution for Ethereum, which just launched it's mainnet beta in May 2021. It uses "optimistic rollups" technology where transactions are submitted directly to the L2, "rolled up" into a single proof, then sent to the layer one chain (Ethereum) to be verified. With smart contract computations being done on L2 rather than L1, it allows for significantly faster and cheaper transactions.
 
-With a mainnet launch in May, it's quickly becoming a new standard for top decentralized applications, such as Uniswap. Unlike sidechains such as Polygon, Arbitrum uses rollups technology and the security of the Layer 1 Ethereum blockchain.
+Arbitrum is also interoperable with Ethereum and the Ethereum Virtual Machine (EVM) so smart contracts can easily be depolyed on Arbitrum without much/any refactoring.
 
-With Magic, developers can connect to Arbitrum by simply specifying the network URL when initiating a Magic instance. This guide will show how you can create a web3-enabled app, allow users to switch between Ethereum and Arbitrum networks, call smart contracts, and send transactions. 
-
-## How does Arbitrum work
-
-
+With Magic, developers can connect to the Arbitrum network by simply specifying the network URL when initiating a Magic instance. This guide will show how you can create a web3-enabled app, allow users to switch between the Ethereum and Arbitrum networks, call smart contracts, and send transactions. 
 
 ## Connecting to Ethereum / Arbitrum
 
-In `magic.js`, we will need two `Magic` and two `Web3` instances, one for each network, since we're allowing users to switch between the two. If you're only interested in connecting to Arbitrum, then only one instance of `Magic` and `Web3` should be created. We also are adding `magicEthereum.network = "ethereum"` to be able to identify the Magic network we're creating.
+In `magic.js`, we will need two `Magic` and two `Web3` instances, one for each network, since we're allowing users to switch between the two. If you're only interested in connecting to Arbitrum, then only one instance of `Magic` and `Web3` should be created. We also are adding `magicEthereum.network = 'ethereum'` to be able to identify the Magic network we're creating.
 
 You’ll use the same API key for both `Magic` instances so that the user’s public address does not change. 
 
@@ -43,9 +39,9 @@ const customNodeOptions = {
 
 // Setting network to Arbitrum Testnet
 export const magicArbitrum = new Magic(process.env.REACT_APP_MAGIC_PUBLISHABLE_KEY, { network: customNodeOptions });
-magicArbitrum.network = "arbitrum"
+magicArbitrum.network = 'arbitrum'
 
-export const arbitrumWeb3 = new Web3(magicArbitrum.rpcProvider);
+export const web3Arbitrum = new Web3(magicArbitrum.rpcProvider);
 
 /** 
  * NOTE: when connecting to a testnet, TEST API keys must be used from the Magic dashboard (live API keys for mainnet)
@@ -53,9 +49,9 @@ export const arbitrumWeb3 = new Web3(magicArbitrum.rpcProvider);
 
 // Setting network to Ethereum (Rinkeby Testnet)
 export const magicEthereum = new Magic(process.env.REACT_APP_MAGIC_PUBLISHABLE_KEY, { network: 'rinkeby' });
-magicEthereum.network = "ethereum"
+magicEthereum.network = 'ethereum'
 
-export const ethWeb3 = new Web3(magicEthereum.rpcProvider);
+export const web3Ethereum = new Web3(magicEthereum.rpcProvider);
 ```
 
 ## Switching Between Networks
@@ -63,7 +59,9 @@ export const ethWeb3 = new Web3(magicEthereum.rpcProvider);
 Users are able to switch between the Ethereum and Arbitrum networks with the `select` element dropdown list. Since one `Magic` instance points towards Ethereum, and the other Arbitrum, we simply update the instance that we’re using for our app based on whichever network the user selects.
 
 ```js
-import { magicEthereum, magicArbitrum, ethWeb3, arbitrumWeb3 } from "../magic";
+import { magicEthereum, magicArbitrum } from '../magic';
+
+  const [magic, setMagic] = useState(magicEthereum);
 
   const handleChangeNetwork = (e) => {
     e.target.value === 'ethereum' ? setMagic(magicEthereum) : setMagic(magicArbitrum);
@@ -100,22 +98,18 @@ return (
 
 ## Send Transaction
 
-Sending a transaction is also very simple and the same for either network you're connected to. All that's needed is to provide an amount to send, and  `from` and `to` addresses. 
-
-/////////////////////////////////
-If no `gas` or `gasPrice` are explicitly passed in, the gas limit and price will be calculated automatically. Otherwise, the values passed in will be used.
-/////////////////////////////////
+Sending a transaction is also very simple and similar for both networks. However, one important difference between the two is gas estimates. The gas limit for `sendTransaction` on Ethereum will always be 21000. However Arbitrum uses ArbGas and is calculated differently (see [Arbitrum Docs](https://developer.offchainlabs.com/docs/arbgas)). For this we set a fallback price of `1000000`.
 
 ```js
 const web3 = magic.network === "ethereum" ? ethWeb3 : arbitrumWeb3;
 
 const sendTransaction = async () => {
   if (!toAddress || !amount) return;
-  const receipt = await web3.eth.sendTransaction({
+  const { transactionHash } = await web3.eth.sendTransaction({
     from: publicAddress,
     to: toAddress,
     value: web3.utils.toWei(amount),
-    gas: 287938372
+    gasLimit: network === 'ethereum' ? 21000 : 1000000
   });
 }
 
@@ -141,13 +135,15 @@ return (
 
 ## Calling Smart Contracts
 
-Separate smart contracts will need to be deployed on each Ethereum and Arbitrum for your users to interact with them. So you'll also need to dynamically know the correct address that the contract is deployed to in order to call it. 
+Separate smart contracts will need to be deployed on each Ethereum and Arbitrum for your users to interact with them, so you'll need to know the address of each in order to call it. 
 
 ```js
+const [message, setMessage] = useState('...');
+const [newMessage, setNewMessage] = useState('');
 const network = magic.network === 'ethereum' ? 'ethereum' : 'arbitrum';
-const rinkebyContractAddress = '0x7aCDA8b3d17A8680a0033b57A693c97dD2b239c3';
+const ethContractAddress = '0x7aCDA8b3d17A8680a0033b57A693c97dD2b239c3';
 const arbitrumContractAddress = '0xaFcf48c7e0eABe6Cd77F539Ab2D8e29c8D5197Dc';
-const contract = new web3.eth.Contract(abi, network === 'ethereum' ? rinkebyContractAddress : arbitrumContractAddress);
+const contract = new web3.eth.Contract(abi, network === 'ethereum' ? ethContractAddress : arbitrumContractAddress);
 
 // Grabbing `message` variable value stored in the smart contract
 const fetchContractMessage = () => contract.methods.message().call().then(setMessage)
@@ -155,7 +151,10 @@ const fetchContractMessage = () => contract.methods.message().call().then(setMes
 // Update contract `message` value on the blockchain
 const updateContractMessage = async () => {
   if (!newMessage) return;
-  const receipt = await contract.methods.update(newMessage).send({ from: user.publicAddress, gas: 287938372 });
+  const { transactionHash } = await contract.methods.update(newMessage).send({ 
+    from: publicAddress, 
+    gasLimit: network === 'ethereum' ? web3.eth.getBlock("latest").gasLimit : 1000000 
+  });
 }
 
 return (
@@ -175,4 +174,4 @@ return (
 
 ## Done
 
-That's all there is to it! You've now got an app that allows users to create a wallet with just their email, and connect to multiple networks within your app.
+That's all there is to it! You've now got an app that allows users to create a wallet with just their email, and connect to the Arbitrum L2 and Ethereum networks within your app.
