@@ -7,7 +7,7 @@
 ```
 $ git clone https://github.com/magiclabs/example-arbitrum-guide.git
 $ cd example-arbitrum-guide
-$ mv .env.local .env // enter your TEST API Key (from https://dashboard.magic.link)
+$ mv .env.local .env // enter your LIVE API Key (from https://dashboard.magic.link)
 $ yarn install
 $ yarn start
 ```
