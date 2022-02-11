@@ -43,10 +43,6 @@ magicArbitrum.network = 'arbitrum'
 
 export const web3Arbitrum = new Web3(magicArbitrum.rpcProvider);
 
-/** 
- * NOTE: when connecting to a testnet, TEST API keys must be used from the Magic dashboard (live API keys for mainnet)
- */
-
 // Setting network to Ethereum (Rinkeby Testnet)
 export const magicEthereum = new Magic(process.env.REACT_APP_MAGIC_PUBLISHABLE_KEY, { network: 'rinkeby' });
 magicEthereum.network = 'ethereum'
