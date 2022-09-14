@@ -33,19 +33,31 @@ import { Magic } from 'magic-sdk';
 import Web3 from 'web3';
 
 const customNodeOptions = {
-  rpcUrl: 'https://rinkeby.arbitrum.io/rpc',
-  chainId: 421611
-}
+  rpcUrl: 'https://goerli-rollup.arbitrum.io/rpc',
+  chainId: 421613,
+};
 
 // Setting network to Arbitrum Testnet
-export const magicArbitrum = new Magic(process.env.REACT_APP_MAGIC_PUBLISHABLE_KEY, { network: customNodeOptions });
-magicArbitrum.network = 'arbitrum'
+export const magicArbitrum = new Magic(process.env.REACT_APP_MAGIC_PUBLISHABLE_KEY, 
+  { 
+    network: customNodeOptions,
+  },
+);
+magicArbitrum.network = 'arbitrum';
 
 export const web3Arbitrum = new Web3(magicArbitrum.rpcProvider);
 
-// Setting network to Ethereum (Rinkeby Testnet)
-export const magicEthereum = new Magic(process.env.REACT_APP_MAGIC_PUBLISHABLE_KEY, { network: 'rinkeby' });
-magicEthereum.network = 'ethereum'
+// Setting network to Ethereum via Custom Node (Goerli Testnet)
+export const magicEthereum = new Magic(
+  process.env.REACT_APP_MAGIC_PUBLISHABLE_KEY, 
+  { 
+    network: {
+      rpcURL: 'https://eth-goerli.g.alchemy.com/v2/K2PvBhxr80z5cRNJ9-Kc-PG2GiLJaU6l',
+      chainId: 5,
+    },
+  },
+);
+magicEthereum.network = 'ethereum';
 
 export const web3Ethereum = new Web3(magicEthereum.rpcProvider);
 ```
@@ -68,7 +80,7 @@ import { magicEthereum, magicArbitrum } from '../magic';
   return (
     <div className="info">
       <select name="network" onChange={(e) => handleChangeNetwork(e)}>
-        <option value="ethereum">Ethereum Testnet (Rinkeby)</option>
+        <option value="ethereum">Ethereum Testnet (Goerli)</option>
         <option value="arbitrum">Arbitrum Testnet</option>
       </select>
     </div>
