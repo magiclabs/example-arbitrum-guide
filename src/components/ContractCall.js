@@ -46,7 +46,7 @@ export default function ContractCall({ network, publicAddress, fetchBalance, mes
           {
           txnHash &&
             <div className='info'>
-              <a href={network === 'ethereum' ? `https://rinkeby.etherscan.io/tx/${txnHash}` : `https://rinkeby-explorer.arbitrum.io/tx/${txnHash}`} target='_blank'>
+              <a href={network === 'ethereum' ? `https://goerli.etherscan.io/tx/${txnHash}` : `https://goerli-rollup-explorer.arbitrum.io/tx/${txnHash}`} target='_blank'>
                 View Transaction
               </a> ↗️
             </div>
