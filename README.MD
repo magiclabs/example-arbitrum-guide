@@ -1,6 +1,5 @@
 # Resources
 - [GitHub Repo](https://github.com/magiclabs/example-arbitrum-guide)
-- [Demo](https://magic-arbitrum.vercel.app/login)
 
 # Quick Start
 
